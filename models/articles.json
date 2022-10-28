@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "firstname": "Ayotunde",
+        "lastname": "Pedro"
+    },
+    {
+        "id": 2,
+        "firstname": "Damilare",
+        "lastname": "Adekanmbi"
+    },
+    {
+        "id": 3,
+        "firstname": "Olayemi",
+        "lastname": "Awoyinfa"
+    }
+]
