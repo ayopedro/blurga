@@ -7,7 +7,7 @@ const connectDB = require("./config/dbConnection");
 
 const root = require("./routes/root");
 const articles = require("./routes/api/articles");
-const users = require("./routes/api/users");
+const authentication = require("./routes/auth");
 
 
 const app = express();
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser);
 
 app.use("/", root);
-app.use("/users", users);
+app.use("/auth", authentication);
 app.use("/articles", articles);
 
 app.get("/*", (req, res) => {

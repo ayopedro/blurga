@@ -12,6 +12,7 @@ const userSchema = new Schema({
     enum: ["user", "editor", "admin"]
   },
   refreshToken: String,
+  articles: [String]
 });
 
 module.exports = mongoose.model("User", userSchema);

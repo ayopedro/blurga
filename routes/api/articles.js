@@ -10,6 +10,7 @@ const {
   deleteArticle,
   getArticle,
 } = require("../../controllers/articles");
+const checkAuth = require("../../middleware/checkAuth");
 
 router
   .route("/")
@@ -22,6 +23,7 @@ router
   .put(
     verifyJWT,
     verifyRoles(rolesList.USER_ROLES.Admin, rolesList.USER_ROLES.Editor),
+    checkAuth,
     updateArticle
   )
   .delete(

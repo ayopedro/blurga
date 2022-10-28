@@ -12,13 +12,13 @@ const refreshJWT = async (req, res) => {
   if (!foundUser) return res.sendStatus(403);
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, decodedToken) => {
-    if (err || foundUser.email !== decodedToken.email)
+    if (err || foundUser.email !== decodedToken.userInfo.email)
       return res.sendStatus(403);
     const roles = Object.values(foundUser.roles);
     const accessToken = jwt.sign(
       {
         userInfo: {
-          email: decodedToken.email,
+          email: decodedToken.userInfo.email,
           roles,
         },
       },

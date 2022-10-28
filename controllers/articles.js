@@ -1,18 +1,58 @@
 const Article = require("../models/Article");
+const User = require("../models/User");
 
 const getArticles = async (req, res) => {
+  const { limit, page } = req.query;
+
   const articles = await Article.find();
+
+  let defaultLimit = 20;
+  let defaultPage = 1;
+
+  if (!isNaN(Number(limit)) && Number(limit) > 0) defaultLimit = Number(limit);
+
+  const totalPages = Math.floor(articles / Number(limit));
+
+  if (!isNaN(Number(page)) && Number(page) <= totalPages)
+    defaultPage = Number(page);
+
+  const startIndex = (defaultPage - 1) * defaultLimit;
+  const endIndex = defaultPage * defaultLimit;
+
+  const result = {};
+
+  if (endIndex < articles.length) {
+    result.next = {
+      page: defaultPage + 1,
+      limit: Number(limit),
+    };
+  }
+
+  if (startIndex > 0) {
+    result.previous = {
+      page: defaultPage - 1,
+      limit: Number(limit),
+    };
+  }
+
+  result.results = articles.slice(startIndex, endIndex);
+
   if (!articles) return res.status(204).json({ message: "No article found!" });
-  res.status(200).json(articles);
+  res.status(200).json(result);
 };
 
 const addArticle = async (req, res) => {
   const { title, description, tags, author, body } = req.body;
+  const user = req.user;
+
+  const foundUser = await User.findOne({ user }).exec();
 
   const duplicate = await Article.findOne({ title }).exec();
 
   if (duplicate) {
-    return res.status(400).json({ message: `Article with title ${title} already exists!` });
+    return res
+      .status(400)
+      .json({ message: `Article with title ${title} already exists!` });
   }
 
   const newArticle = await Article.create({
@@ -31,6 +71,9 @@ const addArticle = async (req, res) => {
 
   try {
     const result = await newArticle;
+    foundUser.articles = result._id;
+    await foundUser.save();
+
     res.status(201).json(result);
   } catch (error) {
     console.log(error);
@@ -107,6 +150,7 @@ const getArticle = async (req, res) => {
 
   res.json(article);
 };
+
 
 module.exports = {
   getArticles,
