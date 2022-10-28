@@ -2,11 +2,18 @@ const Article = require("../models/Article");
 
 const getArticles = async (req, res) => {
   const articles = await Article.find();
+  if (!articles) return res.status(204).json({ message: "No article found!" });
   res.status(200).json(articles);
 };
 
 const addArticle = async (req, res) => {
   const { title, description, tags, author, body } = req.body;
+
+  const duplicate = await Article.findOne({ title }).exec();
+
+  if (duplicate) {
+    return res.status(400).json({ message: `Article with title ${title} already exists!` });
+  }
 
   const newArticle = await Article.create({
     title,
@@ -16,70 +23,86 @@ const addArticle = async (req, res) => {
     body,
   });
 
-  if (!newArticle.firstname || !newArticle.lastname) {
+  if (!title || !description || !author || !body) {
     return res
       .status(400)
-      .json({ message: "First and last names are required" });
+      .json({ message: "Title, author, description and body are required!" });
   }
 
-  data.setArticles([...data.articles, newArticle]);
-  res.status(201).json(data.articles);
+  try {
+    const result = await newArticle;
+    res.status(201).json(result);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const updateArticle = (req, res) => {
-  const article = data.articles.find(
-    (article) => article.id === parseInt(req.body.id)
-  );
+const updateArticle = async (req, res) => {
+  if (!req.body?.id) {
+    return res.status(400).json({ message: "ID is required!" });
+  }
+
+  const article = await Article.findOne({ _id: req.body.id }).exec();
+
+  if (!article) {
+    return res
+      .status(204)
+      .json({ message: `No article matches ID ${req.body.id}` });
+  }
+
+  if (req.body?.title) {
+    article.title = req.body.title;
+  }
+
+  if (req.body?.description) {
+    article.description = req.body.description;
+  }
+
+  if (req.body?.tags) {
+    article.tags = req.body.tags;
+  }
+
+  if (req.body?.author) {
+    article.author = req.body.author;
+  }
+
+  if (req.body?.body) {
+    article.body = req.body.body;
+  }
+
+  const result = await article.save();
+
+  res.json(result);
+};
+
+const deleteArticle = async (req, res) => {
+  if (!req.body?.id) {
+    return res.status(400).json({ message: "Article ID is required!" });
+  }
+
+  const article = await Article.findOne({ _id: req.body.id }).exec();
+
   if (!article) {
     return res
       .status(400)
       .json({ message: `article ID ${req.body.id} not found!` });
   }
 
-  if (req.body.firstname) {
-    article.firstname = req.body.firstname;
-  }
-
-  if (req.body.lastname) {
-    article.lastname = req.body.lastname;
-  }
-
-  const filteredArray = data.articles.filter(
-    (article) => article.id !== parseInt(req.body.id)
-  );
-  const unsortedArray = [...filteredArray, article];
-  data.setarticles(
-    unsortedArray.sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
-  );
-
-  res.json(data.articles);
+  const result = await article.deleteOne({ _id: req.body.id });
+  res.json(result);
 };
 
-const deleteArticle = (req, res) => {
-  const article = data.articles.find(
-    (article) => article.id === parseInt(req.body.id)
-  );
+const getArticle = async (req, res) => {
+  if (!req.params?.id) {
+    return res.status(400).json({ message: "Article ID is required!" });
+  }
+
+  const article = await Article.findOne({ _id: req.body.id }).exec();
+
   if (!article) {
     return res
       .status(400)
-      .json({ message: `article ID ${req.body.id} not found!` });
-  }
-  const filteredArray = data.articles.filter(
-    (article) => article.id !== parseInt(req.body.id)
-  );
-
-  data.setarticles([...filteredArray]);
-  res.json(data.articles);
-};
-
-const getArticle = (req, res) => {
-  const article = data.articles.find(
-    (article) => article.id === parseInt(req.params.id)
-  );
-  if (!article) {
-    return res
-      .status(400)
-      .json({ message: `article ID ${req.params.id} not found!` });
+      .json({ message: `Article ID ${req.params.id} not found!` });
   }
 
   res.json(article);

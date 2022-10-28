@@ -17,15 +17,15 @@ const logout = async (req, res) => {
   }
 
 foundUser.refreshToken = "";
-const result = await foundUser.save();
+const result = await foundUser.save(); 
 console.log(result);
 
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: true,
   });
-  res.send("successfully logged out");
   return res.sendStatus(204);
+  res.send("successfully logged out");
 };
 
 module.exports = { logout };

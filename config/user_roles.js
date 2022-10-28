@@ -1,7 +1,7 @@
 const USER_ROLES = {
-  Admin: "7845",
-  Editor: "2945",
-  User: "0938",
+  Admin: "admin",
+  Editor: "editor",
+  User: "user",
 };
 
 const ARTICLE_STATE = {

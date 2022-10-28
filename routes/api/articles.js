@@ -10,25 +10,21 @@ const {
   deleteArticle,
   getArticle,
 } = require("../../controllers/articles");
-const refreshJWT = require("../../middleware/refreshJWT");
 
 router
   .route("/")
   .get(getArticles)
   .post(
-    refreshJWT,
     verifyJWT,
     verifyRoles(rolesList.USER_ROLES.Admin, rolesList.USER_ROLES.Editor),
     addArticle
   )
   .put(
-    refreshJWT,
     verifyJWT,
     verifyRoles(rolesList.USER_ROLES.Admin, rolesList.USER_ROLES.Editor),
     updateArticle
   )
   .delete(
-    refreshJWT,
     verifyJWT,
     verifyRoles(rolesList.USER_ROLES.Admin),
     deleteArticle

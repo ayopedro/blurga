@@ -8,12 +8,14 @@ const verifyJWT = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   jwt.verify(token, process.env.ACCESS_TOKEN, (err, decodedToken) => {
+
     if (err) return res.sendStatus(403);
 
-    req.user = decodedToken.UserInfo.email;
-    req.roles = decodedToken.UserInfo.roles;
+    req.user = decodedToken.userInfo.email;
+    req.roles = decodedToken.userInfo.roles;
+    
+    next();
   });
-  next();
 };
 
 module.exports = verifyJWT;

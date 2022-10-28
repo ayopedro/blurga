@@ -16,14 +16,22 @@ const createUser = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let userRole;
+
+    if (!role || role === " ") {
+      userRole = role;
+    } else {
+      userRole = role.split(" ");
+    }
+
     const newUser = await User.create({
       first_name: firstname,
       last_name: lastname,
       email,
       password: hashedPassword,
-      roles: role
+      roles: userRole,
     });
-    
+
     console.log(newUser);
 
     res
