@@ -2,43 +2,19 @@ const Article = require("../models/Article");
 const User = require("../models/User");
 
 const getArticles = async (req, res) => {
-  const { limit, page } = req.query;
-
-  const articles = await Article.find();
-
-  let defaultLimit = 20;
-  let defaultPage = 1;
-
-  if (!isNaN(Number(limit)) && Number(limit) > 0) defaultLimit = Number(limit);
-
-  const totalPages = Math.floor(articles / Number(limit));
-
-  if (!isNaN(Number(page)) && Number(page) <= totalPages)
-    defaultPage = Number(page);
-
-  const startIndex = (defaultPage - 1) * defaultLimit;
-  const endIndex = defaultPage * defaultLimit;
-
-  const result = {};
-
-  if (endIndex < articles.length) {
-    result.next = {
-      page: defaultPage + 1,
-      limit: Number(limit),
-    };
-  }
-
-  if (startIndex > 0) {
-    result.previous = {
-      page: defaultPage - 1,
-      limit: Number(limit),
-    };
-  }
-
-  result.results = articles.slice(startIndex, endIndex);
+  articles = res.paginatedResult;
 
   if (!articles) return res.status(204).json({ message: "No article found!" });
-  res.status(200).json(result);
+  res.status(200).json(articles);
+};
+
+const getAdminArticles = async (req, res) => {
+  articles = res.paginatedResult;
+
+  if (!articles)
+    return res.status(204).json({ message: "No article found!" });
+
+  res.status(200).json(articles); 
 };
 
 const addArticle = async (req, res) => {
@@ -59,19 +35,19 @@ const addArticle = async (req, res) => {
     title,
     description,
     tags,
-    author,
+    author: author.toLowerCase(),
     body,
   });
 
   if (!title || !description || !author || !body) {
     return res
       .status(400)
-      .json({ message: "Title, author, description and body are required!" });
+      .json({ message: "Title, Author, Description and Article body are required!" });
   }
 
   try {
     const result = await newArticle;
-    foundUser.articles = result._id;
+    foundUser.articles.push(result._id);
     await foundUser.save();
 
     res.status(201).json(result);
@@ -81,6 +57,9 @@ const addArticle = async (req, res) => {
 };
 
 const updateArticle = async (req, res) => {
+  const user = req.user;
+  const foundUser = await User.findOne({ user }).exec();
+
   if (!req.body?.id) {
     return res.status(400).json({ message: "ID is required!" });
   }
@@ -91,6 +70,12 @@ const updateArticle = async (req, res) => {
     return res
       .status(204)
       .json({ message: `No article matches ID ${req.body.id}` });
+  }
+
+  if (req.body?.state && foundUser.roles.includes("admin")) {
+    article.state = req.body.state;
+  } else {
+    return res.sendStatus(401);
   }
 
   if (req.body?.title) {
@@ -151,9 +136,9 @@ const getArticle = async (req, res) => {
   res.json(article);
 };
 
-
 module.exports = {
   getArticles,
+  getAdminArticles,
   addArticle,
   updateArticle,
   deleteArticle,

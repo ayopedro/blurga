@@ -5,6 +5,7 @@ const cors = require("cors")();
 const mongoose = require("mongoose");
 const connectDB = require("./config/dbConnection");
 
+const errorHandler = require("./middleware/errorHandler")
 const root = require("./routes/root");
 const articles = require("./routes/api/articles");
 const authentication = require("./routes/auth");
@@ -13,6 +14,7 @@ const authentication = require("./routes/auth");
 const app = express();
 const PORT = 5000 || process.env.PORT;
 
+app.use(errorHandler)
 connectDB();
 
 app.use(cors);
