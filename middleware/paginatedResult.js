@@ -2,36 +2,46 @@ const User = require("../models/User");
 
 const paginatedResult = (model) => {
   return async (req, res, next) => {
-    const { limit, page, author, tags, title, state } = req.query;
+    const { author, tags, title, state } = req.query;
+    const limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page);
     const user = req.user;
 
-    let defaultLimit = 20;
-    let defaultPage = 1;
+    let defaultLimit;
+    let defaultPage;
 
-    if (!isNaN(Number(limit)) && Number(limit) > 0)
-      defaultLimit = Number(limit);
+    if (limit && limit > 0) {
+      defaultLimit = limit;
+    } else {
+      defaultLimit = 20;
+    }
 
-    const totalPages = Math.floor(model / Number(limit));
+    const totalPages = Math.floor(
+      (await model.countDocuments().exec()) / limit
+    );
 
-    if (!isNaN(Number(page)) && Number(page) <= totalPages)
-      defaultPage = Number(page);
+    if (page && page <= totalPages) {
+      defaultPage = page;
+    } else {
+      defaultPage = 1;
+    }
 
     const startIndex = (defaultPage - 1) * defaultLimit;
     const endIndex = defaultPage * defaultLimit;
 
     const result = {};
 
-    if (endIndex < model.length) {
+    if (endIndex < (await model.countDocuments().exec())) {
       result.next = {
         page: defaultPage + 1,
-        limit: Number(limit),
+        limit: defaultLimit,
       };
     }
 
     if (startIndex > 0) {
       result.previous = {
         page: defaultPage - 1,
-        limit: Number(limit),
+        limit: defaultLimit,
       };
     }
 
@@ -40,11 +50,33 @@ const paginatedResult = (model) => {
         const foundUser = await User.findOne({ user }).exec();
         const userArticles = foundUser.articles;
 
-        result.results = await model.find({ _id: userArticles }).exec();
+        result.results = await model
+          .find({ _id: userArticles })
+          .limit(defaultLimit)
+          .skip(startIndex)
+          .exec();
+      } else if (author || tags || title) {
+        let regex = new RegExp(`^[${author || tags || title}0-9._-]+$`, "ig");
 
+        result.results = await model
+          .find({
+            $and: [
+              { state: "published" },
+              {
+                $or: [
+                  { author: { $regex: regex } },
+                  { tags: { $regex: regex } },
+                  { title: { $regex: regex } },
+                ],
+              },
+            ],
+          })
+          .limit(defaultLimit)
+          .skip(startIndex)
+          .exec();
       } else {
         result.results = await model
-          .find({ $or: [{ author }, { tags }, { title }, { state }] })
+          .find({ state: "published" })
           .limit(defaultLimit)
           .skip(startIndex)
           .exec();

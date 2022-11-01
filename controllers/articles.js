@@ -2,14 +2,14 @@ const Article = require("../models/Article");
 const User = require("../models/User");
 
 const getArticles = async (req, res) => {
-  articles = res.paginatedResult;
+  const articles = res.paginatedResult;
 
   if (!articles) return res.status(204).json({ message: "No article found!" });
   res.status(200).json(articles);
 };
 
 const getAdminArticles = async (req, res) => {
-  articles = res.paginatedResult;
+  const articles = res.paginatedResult;
 
   if (!articles)
     return res.status(204).json({ message: "No article found!" });
@@ -25,6 +25,18 @@ const addArticle = async (req, res) => {
 
   const duplicate = await Article.findOne({ title }).exec();
 
+  const userTags = tags.split(", ");
+
+  const readingTime = content => {
+    const words = content.split(" ");
+    const wordsLength = words.length;
+    const averageWordsPerMinute = 210;
+
+    const wordsPerMinute = Math.round(wordsLength / averageWordsPerMinute)
+    return wordsPerMinute <= 1 ? 1 : wordsPerMinute
+  }
+   
+
   if (duplicate) {
     return res
       .status(400)
@@ -34,9 +46,10 @@ const addArticle = async (req, res) => {
   const newArticle = await Article.create({
     title,
     description,
-    tags,
-    author: author.toLowerCase(),
+    tags: userTags,
+    author,
     body,
+    reading_time: readingTime(body)
   });
 
   if (!title || !description || !author || !body) {
@@ -125,13 +138,15 @@ const getArticle = async (req, res) => {
     return res.status(400).json({ message: "Article ID is required!" });
   }
 
-  const article = await Article.findOne({ _id: req.body.id }).exec();
+  const article = await Article.findOne({ _id: req.params.id }).exec();
 
   if (!article) {
     return res
       .status(400)
       .json({ message: `Article ID ${req.params.id} not found!` });
   }
+  article.read_count += 1
+  await article.save();
 
   res.json(article);
 };
