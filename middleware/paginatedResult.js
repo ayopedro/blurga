@@ -2,7 +2,7 @@ const User = require("../models/User");
 
 const paginatedResult = (model) => {
   return async (req, res, next) => {
-    const { author, tags, title, state } = req.query;
+    const { author, tags, title } = req.query;
     const limit = parseInt(req.query.limit);
     const page = parseInt(req.query.page);
     const user = req.user;

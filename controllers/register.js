@@ -32,11 +32,9 @@ const createUser = async (req, res) => {
       roles: userRole,
     });
 
-    console.log(newUser);
-
     res
       .status(201)
-      .json({ message: `New user with email address ${email} created` });
+      .json({ message: `New user with email address ${email} created`, user: newUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
