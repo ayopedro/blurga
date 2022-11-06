@@ -14,7 +14,6 @@ const authentication = require("./routes/auth");
 const app = express();
 const PORT = 5000 || process.env.PORT;
 
-app.use(errorHandler)
 connectDB();
 
 app.use(cors);
@@ -31,9 +30,13 @@ app.get("/*", (req, res) => {
   res.status(404).json({ message: "Page not found!" });
 });
 
+app.use(errorHandler);
+
 mongoose.connection.once("open", () => {
   console.log("connected to mongoDB");
   app.listen(PORT, () => {
     console.log(`server is listening on port ${PORT}`);
   });
 });
+
+module.exports = app;

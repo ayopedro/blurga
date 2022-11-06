@@ -4,8 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server",
-    "start": "node server"
+    "dev": "NODE_ENV=development nodemon server",
+    "start": "NODE_ENV=production node server",
+    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit"
   },
   "author": "Ayotunde Pedro",
   "license": "ISC",
@@ -19,6 +20,8 @@
     "mongoose": "^6.7.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "jest": "^29.2.2",
+    "nodemon": "^2.0.20",
+    "supertest": "^6.3.1"
   }
 }
