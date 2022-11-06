@@ -38,7 +38,7 @@ This is an api for a blog app - An AltSchool Assessment
 
 ## Base URL
 
-- https://blogapp.cyclic.app/
+- https://long-rose-trout-tie.cyclic.app
 
 ## Models
 
@@ -116,7 +116,7 @@ Success
 ```
 {
   "password": "test123",
-  "username": "test@mail.com",
+  "email": "test@mail.com",
 }
 ```
 
